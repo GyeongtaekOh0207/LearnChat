@@ -6,15 +6,15 @@ class Generator:
         self.llm = Llama.from_pretrained(
             repo_id="bartowski/DeepSeek-R1-Distill-Qwen-1.5B-GGUF",
             filename="DeepSeek-R1-Distill-Qwen-1.5B-IQ2_M.gguf",
+            verbose=False 
         )
         self.max_length = 50
         
-    def generate(self, prompt: str) -> Iterator[str]:
-        stream = self.llm(
-            prompt, 
-            max_tokens=self.max_length, 
-            stream=True
+    def generate(self, prompt: str) -> str:
+        response = self.llm(
+            prompt,
+            max_tokens=self.max_length,
+            stream=False,
+            echo=False
         )
-        
-        for chunk in stream:
-            yield chunk['choices'][0]['text']
+        return response['choices'][0]['text']
