@@ -23,6 +23,9 @@ class Retrieval:
         # query: this is an empty query (None of the json key matches)
         # @ return None
         # ###
+        for key in self.data:
+            if key.lower() in query.lower():
+                return f"{key}: {self.data[key]}"
         return None
 
 
