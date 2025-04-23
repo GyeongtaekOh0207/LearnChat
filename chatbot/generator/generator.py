@@ -1,33 +1,33 @@
 from typing import Iterator
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
 class Generator:
     def __init__(self) -> None:
-        # ###
-        # 주석을 지우고 __init__ 을 자유롭게 활용하자.
-        # ###
-        pass
+        self.model_name = "gpt2"
 
-
+        self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+        self.model = AutoModelForCausalLM.from_pretrained(self.model_name)
+        
+        self.max_length = 50
+        
     def generate(self, prompt: str) -> Iterator[str]:
-        # ###
-        # 주석을 지우고 다음 기능을 완성하자.
-        # generate 는 단순 prompt 뒤에 이어질 "자연스러운" 말을 리턴하면 된다.
-        # 단, 토큰을 하나하나 출력하기 위해서는 Iterator 로 리턴해야한다. 
-        # yield 개념을 모른다면 공부해보자!
-        # 
-        # 예시 1:
-        # prompt: I want
-        # @return: " to be a doctor"
-        # 
-        # 예시 2:
-        # prompt: Pizza is 
-        # @return: " so delicious"
-        # ###
-
-        text = "This is a sample answer. Replace this with your answer"
-        from time import sleep
-        for chunk in text.split():
-            sleep(0.1)
-            yield chunk
-            yield ' '
-
+        inputs = self.tokenizer(prompt, return_tensors="pt")
+        input_ids = inputs["input_ids"]
+        attention_mask = inputs["attention_mask"]
+        
+        generated = self.model.generate(
+            input_ids,
+            attention_mask=attention_mask,
+            max_length=len(input_ids[0]) + self.max_length,
+            num_return_sequences=1,
+            no_repeat_ngram_size=2,
+            do_sample=True,
+            temperature=0.7,
+            top_p=0.9,
+            pad_token_id=self.tokenizer.eos_token_id
+        )
+        
+        generated_text = self.tokenizer.decode(generated[0], skip_special_tokens=True)
+        new_text = generated_text[len(prompt):]
+        for i in range(0, len(new_text), 1):
+            yield new_text[i]
